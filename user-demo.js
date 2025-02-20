@@ -9,30 +9,52 @@ var id = 1 // 하나의 객체를 유니크하게 구별하기 위함
 
 // 로그인
 app.post('/login', function(req,res){
+    console.log(req.body) // userId pwd body로 받아 
 
+    // userId가 디비에 저장된 회원인지?
+    const {userId, password} = req.body
+    var loginUser = {}
+
+    db.forEach(function(user, id) {
+        if (user.userId === userId) {
+            loginUser = user // 로그인 유저에 객체 담고
+        }
+    })
+
+    if (Object.keys(loginUser). length === 1) {
+        console.log("같아")
+
+         //pwd도 맞는지 비교
+         if (user.password === password) {
+            console.log("패스워드도 같아")
+        } else {
+            console.log("패스워드는 틀렸다.")
+        }
+    } else {
+        console.log("입력하신 아이디는 없는 아이디입니다.")
+    }
+
+    // id가 디비에 저장된 회원인지 확인해야..
+    // pwd도 맞는지 비교
 })
 
 // 회원 가입
 app.post('/join', function(req,res){
     console.log(req.body)
 
-
-    if (req.body == {}) {
-        res.status(400).json({
-            message : `입력 값을 다시 확인해주세요`
-        }) //400은 요청한 데이터가 덜 왔을 때
-}   else {res.status(400).json({
-    message : `입력 값을 다시 확인해주세요`
-}) //400은 요청한 데이터가 덜 왔을 때
-
-
+ // 빈 객체 체크 (입력값이 없는 경우)
+ if (Object.keys(req.body).length === 0) {
+    res.status(400).json({
+        message: '입력 값을 다시 확인해주세요.'
+    });
+    return;  // 중복 응답 방지
+}
 
 db.set(id++, req.body)
 
 res.status(201).json({
     message : `${db.get(id-1).name}님 환영합니다.`
 }) // 201 은 생성되었다는 의미 
-}
 })
 
 
