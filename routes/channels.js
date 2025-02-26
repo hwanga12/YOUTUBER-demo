@@ -1,36 +1,43 @@
 //express 모듈 세팅
 const express = require('express')
-const app = express()
-app.listen(7777)
-app.use(express.json()) // http 외 모듈 json
+const router = express.Router()
+
+router.use(express.json()) // http 외 모듈 json
 
 let db = new Map()  //디비 값 1부터 시작
 var id = 1 // 하나의 객체를 유니크하게 구별하기 위함
 
 //채널 전체 조회
-app
-    .route('/channels/')
+router
+    .route('/')
     .get((req, res) => {
-        if(db.size) {
+        var {userId} = req.body
         var channels = []
 
-        db.forEach(function(value, key) {
-            channels.push(value)
-        })
+        if(db.size && userId) {
+            db.forEach(function(value, key) {
+                if (value.userId === userId)
+                    channels.push(value)
+            })
 
-        res.status(200).json(channels)
-    } else {
-        res.status(404).json({
-            message : `조회할 채널이 없습니다`
-        })
-    }
+            if (channels.length) {
+                res.status(200).json(channels)
+                
+            } else {
+                notfoundChannel()
+            }
+            
+        
+        } else {
+            notfoundChannel()
+        }
 
     }) //전체 조회
 
     .post((req, res) => {
         if (req.body.channelTitle) {
-
-            db.set(id++, req.body)
+            let channel = req.body
+            db.set(id++, channel)
 
             res.status(201).json({
             message : `${db.get(id-1).channelTitle}님, 채널을 응원합니다.`
@@ -47,8 +54,8 @@ app
 
 
 
-app
-    .route('/channels/:id')
+router
+    .route('/:id')
     .get((req, res) => {
         let {id} = req.params
         id = parseInt(id)
@@ -57,9 +64,7 @@ app
         if (channel) {
             res.status(200).json(channel)
         } else {
-            res.status(404).json({
-                message : "채널 정보를 찾을 수 없습니다."   
-            })
+            notfoundChannel()
         }
 
     }) // 개별 조회
@@ -94,8 +99,17 @@ app
                 message : `${channel.channelTitle}이 정상적으로 삭제되었습니다.`
             })
         } else {
-            res.status(404).json({
-                message : "채널 정보를 찾을 수 없습니다."   
-            })
+            notfoundChannel()
         }
     }) // 개별 삭제
+
+function notfoundChannel() {
+    res.status(404).json({
+        message : "채널 정보를 찾을 수 없습니다."   
+    })
+
+}
+
+
+
+module.exports = router
